@@ -1317,6 +1317,7 @@ async def ui_get_job(request, userdata, batch_id):
                                                             'resources': dict(),
                                                             'env': list}))
 
+
     resources = job_specification['resources']
     if 'memory_bytes' in resources:
         resources['actual_memory'] = humanize.naturalsize(resources['memory_bytes'], binary=True)
@@ -1328,6 +1329,14 @@ async def ui_get_job(request, userdata, batch_id):
         resources['actual_cpu'] = resources['cores_mcpu'] / 1000
         del resources['cores_mcpu']
 
+
+    import plotly.express as px
+    df = px.data.gapminder()
+    fig = px.line(df, x="year", y="lifeExp", color="continent", line_group="country", hover_name="country",
+        line_shape="spline", render_mode="svg")
+    plot_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
+
     page_context = {
         'batch_id': batch_id,
         'job_id': job_id,
@@ -1336,8 +1345,11 @@ async def ui_get_job(request, userdata, batch_id):
         'attempts': attempts,
         'step_statuses': step_statuses,
         'job_specification': job_specification,
-        'job_status_str': json.dumps(job, indent=2)
+        'job_status_str': json.dumps(job, indent=2),
+        'plot_json':plot_json
     }
+
+
     return await render_template('batch', request, userdata, 'job.html', page_context)
 
 
